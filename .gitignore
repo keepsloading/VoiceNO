@@ -1,0 +1,21 @@
+# Virtual environment
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Large model checkpoints
+checkpoints/*.pth
+!checkpoints/.gitkeep
+
+# User profiles and recordings
+calibration_data/
+user_profiles/
+experiments/*.json
+
+# MediaPipe models
+*.task
+!voiceno/preprocessing/face_landmarker.task
+*.tflite

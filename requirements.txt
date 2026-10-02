@@ -1,0 +1,13 @@
+torch>=2.0.0
+torchvision>=0.15.0
+torchaudio>=2.0.0
+pytorch-lightning>=2.0.0
+sentencepiece>=0.1.99
+av>=10.0.0
+opencv-python>=4.8.0
+mediapipe>=0.10.0
+scikit-image>=0.20.0
+jiwer>=3.0.0
+gradio>=4.0.0
+gdown>=4.7.0
+pytest>=7.0.0
