@@ -12,11 +12,17 @@ import json
 import os
 from pathlib import Path
 import shutil
+import sys
 import time
 import zipfile
 import torch
 
-from voiceno.config import REPO_ROOT, VoiceNoConfig
+# Ensure repository root is on sys.path
+REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from voiceno.config import VoiceNoConfig
 from voiceno.models.auto_avsr import AutoAVSRModel
 from voiceno.models.personalization import PersonalizationManager
 from voiceno.calibration.trainer import PersonalizationTrainer
