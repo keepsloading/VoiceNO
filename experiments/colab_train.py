@@ -59,6 +59,16 @@ def main():
     eval_items = recorder.load_dataset(user_id=args.user, partition="evaluation")
     print(f"Loaded {len(calib_items)} calibration utterance(s) and {len(eval_items)} evaluation utterance(s).")
 
+    # Ensure video_path resolves locally regardless of machine origin
+    for item in calib_items + eval_items:
+        vpath = Path(item.get("video_path", ""))
+        if not vpath.exists():
+            utt_id = item.get("utterance_id", item.get("id", ""))
+            partition = item.get("partition", "calibration")
+            candidate = extract_dir / partition / f"{utt_id}.mp4"
+            if candidate.exists():
+                item["video_path"] = str(candidate.resolve())
+
     if not calib_items:
         raise ValueError("No calibration items found in the provided zip package!")
 

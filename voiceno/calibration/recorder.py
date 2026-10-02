@@ -81,7 +81,12 @@ class CalibrationRecorder:
         utterances = []
         for meta_file in sorted(user_dir.glob("*.json")):
             with open(meta_file) as f:
-                utterances.append(json.load(f))
+                item = json.load(f)
+            # Rebase video_path to local adjacent .mp4 file if it exists (for portability across machines)
+            local_video = meta_file.with_suffix(".mp4")
+            if local_video.exists():
+                item["video_path"] = str(local_video.resolve())
+            utterances.append(item)
         return utterances
 
     def export_calibration_package(
