@@ -146,12 +146,13 @@ class PersonalizationManager:
         self.active_mode = "Personalized"
         return trainable_params
 
-    def remove_lora(self, model: nn.Module) -> None:
+    def remove_lora(self, model: Optional[nn.Module] = None) -> None:
         """Removes LoRA adapters and restores original frozen linear layers."""
-        for name, module in model.named_modules():
-            for child_name, child in list(module.named_children()):
-                if isinstance(child, LoRALinear):
-                    setattr(module, child_name, child.original_linear)
+        if model is not None:
+            for name, module in model.named_modules():
+                for child_name, child in list(module.named_children()):
+                    if isinstance(child, LoRALinear):
+                        setattr(module, child_name, child.original_linear)
 
         self.lora_layers.clear()
         self.is_personalized = False

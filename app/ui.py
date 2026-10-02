@@ -246,6 +246,8 @@ def build_ui(
         def on_mode_change(selected_mode, user_id):
             if selected_mode == "Personalized":
                 try:
+                    if model_wrapper.model is None:
+                        model_wrapper.load_checkpoint()
                     profile_dir = REPO_ROOT / "user_profiles" / user_id
                     if (profile_dir / "lora.pt").is_file():
                         personalization_mgr.load_profile(model_wrapper.model, user_id=user_id)
@@ -256,7 +258,7 @@ def build_ui(
                 except Exception as e:
                     return f"Error loading profile: {e}"
             else:
-                if personalization_mgr.is_personalized:
+                if model_wrapper.model is not None and personalization_mgr.is_personalized:
                     personalization_mgr.remove_lora(model_wrapper.model)
                 return "Generic Mode active (Auto-AVSR Baseline)"
 
