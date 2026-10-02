@@ -40,8 +40,10 @@ class LoRALinear(nn.Module):
         in_features = original_linear.in_features
         out_features = original_linear.out_features
 
-        self.lora_A = nn.Parameter(torch.zeros(r, in_features))
-        self.lora_B = nn.Parameter(torch.zeros(out_features, r))
+        dev = original_linear.weight.device
+        dtype = original_linear.weight.dtype
+        self.lora_A = nn.Parameter(torch.zeros(r, in_features, device=dev, dtype=dtype))
+        self.lora_B = nn.Parameter(torch.zeros(out_features, r, device=dev, dtype=dtype))
         self.dropout = nn.Dropout(p=lora_dropout) if lora_dropout > 0 else nn.Identity()
 
         # Initialize A with Kaiming uniform, B with zeros (ensures zero delta at initialization)
@@ -50,6 +52,9 @@ class LoRALinear(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         base_out = self.original_linear(x)
+        if self.lora_A.device != x.device or self.lora_A.dtype != x.dtype:
+            self.lora_A.data = self.lora_A.data.to(device=x.device, dtype=x.dtype)
+            self.lora_B.data = self.lora_B.data.to(device=x.device, dtype=x.dtype)
         lora_out = (self.dropout(x) @ self.lora_A.T) @ self.lora_B.T * self.scaling
         return base_out + lora_out
 
@@ -129,10 +134,9 @@ class PersonalizationManager:
                         lora_alpha=self.config.lora_alpha,
                         lora_dropout=self.config.lora_dropout,
                     )
-                    # Explicitly ensure adapter parameters require gradients
                     lora_wrapper.lora_A.requires_grad = True
                     lora_wrapper.lora_B.requires_grad = True
-
+                    lora_wrapper.to(device=child.weight.device, dtype=child.weight.dtype)
                     setattr(module, child_name, lora_wrapper)
                     layer_key = f"{name}.{child_name}" if name else child_name
                     self.lora_layers[layer_key] = lora_wrapper
