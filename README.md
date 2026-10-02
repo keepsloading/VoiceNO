@@ -6,49 +6,54 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Status: V0 Research Prototype](https://img.shields.io/badge/Status-V0_Offline_Prototype-orange.svg)](#current-status)
 
-**VoiceNO** is a camera-only silent speech recognition prototype with personalized visual speech adaptation.
+**VoiceNO** is a privacy-first, camera-only silent speech interface for AI agents. It enables a user to silently mouth natural language instructions directly to an AI assistant without making a sound or typing.
 
 ---
 
 ## 1. What is VoiceNO?
 
-VoiceNO performs silent visual speech recognition (lip-reading) entirely from camera video without a microphone. It pairs a pretrained visual speech recognition (VSR) foundation model with parameter-efficient Low-Rank Adaptation (LoRA) to study one core research question:
+VoiceNO performs silent visual speech recognition (lip-reading) entirely from camera video without a microphone. It addresses the fundamental problem of **viseme ambiguity** (where sounds like `/p/`, `/b/`, `/m/` appear visually identical on the lips) by combining:
 
-> **Can a pretrained visual speech recognition model become better at recognizing one person's speech after a few minutes of personalized calibration?**
+1. **Local Visual Speech Recognition:** Pretrained Auto-AVSR visual backbone preserving N-best candidate hypotheses.
+2. **Personal Calibration:** Lightweight LoRA attention adaptation fine-tuned to the user's articulatory dynamics.
+3. **Agent Action Grammar & Semantic Reconstruction:** Disambiguates phonetic collisions using the active application, file type, and task context.
+4. **Uncertainty-Aware UX:** Surfaces candidate options for rapid 1-click confirmation when ambiguity arises.
 
 ---
 
-## 2. Why VoiceNO?
+## 2. Why VoiceNO for AI Agents?
 
-Conventional automated speech recognition (ASR) relies exclusively on acoustic signals from a microphone. Acoustic speech recognition fails in high-noise environments, poses privacy risks in public spaces, and does not serve individuals with vocal cord conditions or laryngectomy. 
+Conventional voice assistants require speaking aloud, making them unusable in open offices, libraries, public transport, or late at night. Conversely, keyboard typing is slow and interrupts physical workflows.
 
-VoiceNO explores whether camera-only visual speech signals can transcribe silent articulation accurately, and demonstrates how personalized adaptation bridges the gap between generic foundation models and individual facial articulatory dynamics.
+VoiceNO enables **private, zero-acoustic human-AI interaction**:
+- **Zero Audio Footprint:** Complete privacy in crowded spaces.
+- **Structured Intent Space:** Commands follow natural agent grammar (*"Convert this image to PDF"*, *"Summarize this document"*, *"Why does this code fail"*).
+- **Environment Grounding:** The AI agent's awareness of the active window and screen context provides the missing prior needed to resolve visual speech ambiguity.
 
 ---
 
 ## 3. Current Status
 
 ```text
-Status: V0 — Offline Personalized VSR Prototype
+Status: V0 — Offline Personalized Silent Speech Interface for AI Agents
 ```
 
 > [!IMPORTANT]
 > **What V0 is:**
-> - A functional offline utterance-based research prototype.
-> - An end-to-end pipeline: Camera Video &rarr; MediaPipe Face Landmarks &rarr; Normalized 96&times;96 Mouth ROI &rarr; Auto-AVSR Backbone &rarr; LoRA Personalization &rarr; Text.
-> - A modular evaluation harness comparing Generic vs. Personalized performance on held-out utterances using reproducible WER and CER metrics.
+> - A functional offline research prototype for private AI agent commands.
+> - An end-to-end pipeline: Camera Video &rarr; MediaPipe Face Landmarks &rarr; Normalized 96&times;96 Mouth ROI &rarr; Auto-AVSR Backbone &rarr; LoRA Personalization &rarr; Agent Semantic Reconstruction &rarr; Structured Action.
+> - A modular evaluation harness comparing Generic vs. Personalized performance on held-out utterances.
 >
 > **What V0 is NOT:**
 > - Not real-time streaming (processes recorded visual utterances offline).
-> - Not production-ready or commercially cleared.
-> - Not claimed to be universal or robust across all camera angles and lighting conditions.
+> - Not a general-purpose 200,000-word keyboard replacement; focused specifically on natural language AI agent commands and task instructions.
 
 ---
 
 ## 4. Architecture Pipeline
 
 ```text
-Webcam Video (720p+, ~25 FPS, RGB)
+Silent Utterance (Camera-Only, Audio-Free)
         ↓
 Face Detection & Landmarks (MediaPipe)
         ↓
@@ -60,7 +65,11 @@ Pretrained VSR Backbone (Auto-AVSR Conformer)
         ↓
 Personalization Layer (Frozen Base + LoRA on Wq, Wk, Wv; r=8)
         ↓
-Transcribed Text (CTC / Beam Search)
+N-Best Phonetic Subword Lattice (Preserving Uncertainty)
+        ↓
+Agent Intent & Semantic Reconstructor (Active App, File Type, Action Grammar)
+        ↓
+Dispatched AI Agent Command (e.g., "Convert this image to PDF")
 ```
 
 ---

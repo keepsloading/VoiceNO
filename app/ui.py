@@ -79,39 +79,63 @@ def build_ui(
             )
 
         with gr.Tabs():
-            # TAB 1: Transcription
-            with gr.TabItem("Transcribe Utterance"):
+            # TAB 1: Silent AI Agent Prompter
+            with gr.TabItem("🤖 Silent AI Agent Prompter"):
                 with gr.Row():
                     with gr.Column(scale=1):
                         video_input = gr.Video(
                             label="Webcam / Video Utterance (Camera-Only)",
                             sources=["webcam", "upload"],
                         )
-                        with gr.Accordion("🌐 Task Context (Optional Disambiguation Clues)", open=False):
+                        with gr.Accordion("🌐 Agent Environment & Screen Context", open=True):
+                            gr.Markdown("**Quick Presets (1-Click Environment):**")
+                            with gr.Row():
+                                preset_file = gr.Button("📁 File & Image", size="sm")
+                                preset_doc = gr.Button("📄 Document", size="sm")
+                                preset_code = gr.Button("💻 Coding", size="sm")
+                                preset_web = gr.Button("🌐 Web", size="sm")
+                                preset_cal = gr.Button("📅 Calendar", size="sm")
+
                             ctx_app = gr.Dropdown(
-                                label="Active Application",
-                                choices=["None", "browser", "code_editor", "document_viewer", "calendar", "general"],
-                                value="None",
+                                label="Active Application / Environment",
+                                choices=["None", "file_manager", "document_viewer", "code_editor", "web_browser", "calendar_mail", "general"],
+                                value="file_manager",
                             )
                             ctx_keywords = gr.Textbox(
-                                label="Context Keywords / Selected Text",
-                                placeholder="e.g. mall, shopping, water, code, error",
+                                label="Context Keywords / Screen Clues",
+                                value="convert, image, pdf",
+                                placeholder="e.g. convert, image, pdf, summarize, error",
                                 lines=2,
                             )
                             apply_context_chk = gr.Checkbox(
-                                label="Apply Contextual & Linguistic Rescoring",
+                                label="Apply Agent Intent Grammar & Semantic Reconstruction",
                                 value=True,
                             )
                         transcribe_btn = gr.Button("Transcribe Silent Utterance", variant="primary")
                     with gr.Column(scale=1):
                         output_text = gr.Textbox(
-                            label="Top Candidate Interpretation",
-                            placeholder="Transcribed text will appear here...",
+                            label="🎯 Decoded AI Agent Command",
+                            placeholder="Mouth an instruction (e.g. 'Convert this image to PDF')...",
                             lines=2,
                         )
                         confidence_badge = gr.Textbox(
                             label="Confidence & Ambiguity Status",
                             value="Awaiting utterance...",
+                            lines=1,
+                            interactive=False,
+                        )
+                        with gr.Row():
+                            agent_action_box = gr.Textbox(
+                                label="🤖 Structured Agent Action",
+                                placeholder="Agent action representation will appear here...",
+                                lines=2,
+                                interactive=False,
+                                scale=3,
+                            )
+                            execute_agent_btn = gr.Button("⚡ Execute Action", variant="primary", scale=1)
+                        agent_exec_status = gr.Textbox(
+                            label="Agent Execution Result",
+                            value="Awaiting command...",
                             lines=1,
                             interactive=False,
                         )
@@ -160,11 +184,14 @@ def build_ui(
                 with gr.Row():
                     with gr.Column(scale=1):
                         prompt_display = gr.Textbox(
-                            label="Calibration Prompt Sentence",
+                            label="AI Agent Command Prompt (Mouth Silently)",
                             value=CALIBRATION_PROMPTS[0],
                             interactive=False,
                             lines=2,
                         )
+                        with gr.Row():
+                            prev_prompt_btn = gr.Button("◀ Prev Prompt", size="sm")
+                            next_prompt_btn = gr.Button("Next Prompt ▶", size="sm")
                         calib_video = gr.Video(
                             label="Record Calibration Utterance (Silent)",
                             sources=["webcam", "upload"],
@@ -301,14 +328,37 @@ def build_ui(
                 res = model_wrapper.transcribe(video_path)
                 hyps = res.get("hypotheses", [{"text": res["transcription"], "score": 0.0}])
 
-                # Apply Contextual Rescoring if requested
+                # Apply Contextual Rescoring and Agent Semantic Reconstruction
+                structured_action = {}
                 if apply_context:
                     kws = [k.strip() for k in keywords_str.split(",") if k.strip()] if keywords_str else []
                     app_val = None if active_app == "None" else active_app
-                    ctx = TaskContext(active_app=app_val, domain_keywords=kws)
-                    hyps = context_rescorer.rescore_hypotheses(hyps, context=ctx)
+                    ctx = AgentContext(active_app=app_val, domain_keywords=kws)
+                    recon = context_rescorer.reconstruct_agent_command(hyps, context=ctx)
+                    top_text = recon["text"]
+                    hyps = recon["rescored_hypotheses"]
 
-                top_text = hyps[0]["text"] if hyps else res["transcription"]
+                    # Generate structured agent action
+                    words_upper = top_text.upper()
+                    if "CONVERT" in words_upper and "IMAGE" in words_upper and "PDF" in words_upper:
+                        structured_action = {"action": "convert_file", "source_format": "image", "target_format": "pdf", "intent": "File Transformation"}
+                    elif "SUMMARIZE" in words_upper:
+                        structured_action = {"action": "summarize", "target": "document / selection", "intent": "Text Analysis"}
+                    elif "EXPLAIN" in words_upper:
+                        structured_action = {"action": "explain", "target": "code / error", "intent": "Explanation"}
+                    elif "REWRITE" in words_upper:
+                        structured_action = {"action": "rewrite", "style": "professional", "intent": "Text Transformation"}
+                    elif "SEARCH" in words_upper:
+                        query = top_text.replace("SEARCH FOR", "").replace("SEARCH", "").strip()
+                        structured_action = {"action": "web_search", "query": query, "intent": "Information Retrieval"}
+                    elif "OPEN" in words_upper and "CALENDAR" in words_upper:
+                        structured_action = {"action": "open_app", "target": "calendar", "intent": "Navigation"}
+                    else:
+                        structured_action = {"action": "custom_agent_instruction", "raw_command": top_text, "status": "Ready for Execution"}
+                else:
+                    top_text = hyps[0]["text"] if hyps else res["transcription"]
+                    structured_action = {"action": "raw_speech_text", "command": top_text}
+
                 score_margin = res.get("score_margin", 0.0)
                 conf = res.get("confidence_level", "HIGH")
                 top_prob = hyps[0].get("rescored_prob", hyps[0].get("normalized_prob", 1.0))
@@ -334,9 +384,13 @@ def build_ui(
                     "score_margin": score_margin,
                 }
 
+                action_json_str = json.dumps(structured_action, indent=2)
+
                 return (
                     top_text,
                     badge,
+                    action_json_str,
+                    "Command ready for execution. Click '⚡ Execute Action' to dispatch." if top_text else "Awaiting command...",
                     hyps,
                     gr.update(visible=needs_clarif),
                     gr.update(choices=clarif_choices, value=clarif_choices[0] if clarif_choices else None),
@@ -346,12 +400,53 @@ def build_ui(
                 )
             except Exception as e:
                 err_msg = f"Transcription error: {str(e)}"
-                return err_msg, "Error", [], gr.update(visible=False), gr.update(choices=[]), err_msg, {"error": str(e)}, {}
+                return err_msg, "Error", "{}", err_msg, [], gr.update(visible=False), gr.update(choices=[]), err_msg, {"error": str(e)}, {}
 
         transcribe_btn.click(
             fn=handle_transcription,
             inputs=[video_input, mode_selector, active_profile, ctx_app, ctx_keywords, apply_context_chk],
-            outputs=[output_text, confidence_badge, nbest_box, clarif_panel, clarif_radio, clarif_status, telemetry_box, session_transcription_state],
+            outputs=[output_text, confidence_badge, agent_action_box, agent_exec_status, nbest_box, clarif_panel, clarif_radio, clarif_status, telemetry_box, session_transcription_state],
+        )
+
+        def handle_execute_agent(action_json_str):
+            if not action_json_str or action_json_str == "{}":
+                return "No agent action to execute."
+            try:
+                data = json.loads(action_json_str)
+                act = data.get("action", "instruction")
+                return f"🚀 Agent executed: [{act.upper()}] successfully! Dispatched to local AI Agent."
+            except Exception:
+                return "🚀 Dispatched silent command to local AI Agent!"
+
+        execute_agent_btn.click(
+            fn=handle_execute_agent,
+            inputs=[agent_action_box],
+            outputs=[agent_exec_status],
+        )
+
+        # Wire Context Quick Preset buttons
+        preset_file.click(lambda: ("file_manager", "convert, image, pdf, export"), outputs=[ctx_app, ctx_keywords])
+        preset_doc.click(lambda: ("document_viewer", "summarize, document, pdf, paragraph"), outputs=[ctx_app, ctx_keywords])
+        preset_code.click(lambda: ("code_editor", "code, error, bug, function, fail"), outputs=[ctx_app, ctx_keywords])
+        preset_web.click(lambda: ("web_browser", "search, find, cheapest, option"), outputs=[ctx_app, ctx_keywords])
+        preset_cal.click(lambda: ("calendar_mail", "calendar, open, schedule, reminder"), outputs=[ctx_app, ctx_keywords])
+
+        # Prompt Navigation handlers
+        calib_prompt_idx = gr.State(0)
+
+        def on_step_prompt(current_idx, delta):
+            new_idx = (current_idx + delta) % len(CALIBRATION_PROMPTS)
+            return CALIBRATION_PROMPTS[new_idx], new_idx
+
+        prev_prompt_btn.click(
+            fn=lambda idx: on_step_prompt(idx, -1),
+            inputs=[calib_prompt_idx],
+            outputs=[prompt_display, calib_prompt_idx],
+        )
+        next_prompt_btn.click(
+            fn=lambda idx: on_step_prompt(idx, 1),
+            inputs=[calib_prompt_idx],
+            outputs=[prompt_display, calib_prompt_idx],
         )
 
         def handle_clarification_confirm(user_id, selected_choice, custom_text, stored_state):

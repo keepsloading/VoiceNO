@@ -13,6 +13,8 @@ checkpoints/*.pth
 # User profiles and recordings
 calibration_data/
 user_profiles/
+clarification_logs/
+*.zip
 experiments/*.json
 
 # MediaPipe models
