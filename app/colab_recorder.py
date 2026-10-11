@@ -154,8 +154,8 @@ def get_model_and_rescorer():
     from voiceno.context.rescorer import ContextRescorer
 
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
-    print(f"Loading VoiceNO pipeline on {device}...")
-    config = ModelConfig(device=device, beam_size=10)
+    print(f"Loading VoiceNO pipeline on {device} (beam_size=40)...")
+    config = ModelConfig(device=device, beam_size=40)
     model = AutoAVSRModel(config=config)
     model.load_checkpoint(str(ckpt_path))
     rescorer = ContextRescorer()
@@ -166,8 +166,9 @@ def get_model_and_rescorer():
 def run_pipeline(
     model: Any = None,
     rescorer: Any = None,
+    context: Any = None,
     output_file: str = "webcam_test.mp4",
-    nbest: int = 5,
+    nbest: int = 15,
 ) -> Dict[str, Any]:
     """Records a clip from the browser webcam, runs Conformer beam search, and rescores hypotheses.
 
@@ -178,13 +179,23 @@ def run_pipeline(
         model = model or loaded_model
         rescorer = rescorer or loaded_rescorer
 
+    if context is None:
+        from voiceno.context.rescorer import AgentContext
+        context = AgentContext(
+            domain_keywords=[
+                "CONVERT", "IMAGE", "PDF", "SUMMARIZE", "DOCUMENT",
+                "FILE", "CODE", "TESTS", "BUG", "OPEN", "EXPLAIN",
+                "CALENDAR", "BROWSER", "SEARCH", "PLAYING", "BALL", "PARK", "MALL"
+            ]
+        )
+
     video_clip = record_webcam(output_file)
 
-    print("Extracting mouth movements & running Conformer beam search...")
+    print("Extracting mouth movements & running Conformer beam search (beam_size=40)...")
     details = model.transcribe(video_clip, use_beam_search=True, nbest=nbest)
     hypotheses = details.get("hypotheses", [])
 
-    rescored = rescorer.rescore_hypotheses(hypotheses)
+    rescored = rescorer.rescore_hypotheses(hypotheses, context=context)
 
     top_vis = hypotheses[0]["text"] if hypotheses else ""
     top_rescored = rescored[0]["text"] if rescored else ""
