@@ -5,6 +5,11 @@ from voiceno.domains.base import BaseDomain
 from voiceno.domains.ai_prompts import get_ai_prompts_domain
 
 
+from voiceno.domains.coding import get_coding_domain
+from voiceno.domains.email import get_email_domain
+from voiceno.domains.blogging import get_blogging_domain
+
+
 class DomainRegistry:
     """Manages active and registered silent speech domain modules."""
 
@@ -45,6 +50,13 @@ class DomainRegistry:
         """Initializes default built-in domain modules."""
         if "ai_prompts" not in cls._domains:
             cls.register(get_ai_prompts_domain())
+        if "coding" not in cls._domains:
+            cls.register(get_coding_domain())
+        if "email" not in cls._domains:
+            cls.register(get_email_domain())
+        if "blogging" not in cls._domains:
+            cls.register(get_blogging_domain())
+
 
 
 # Convenience functions
