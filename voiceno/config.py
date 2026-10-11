@@ -51,8 +51,8 @@ class ModelConfig:
     )
     # CTC weight in hybrid CTC/Attention architecture
     ctc_weight: float = 0.1
-    # Beam search decoder beam size (can use 10 for fast CPU inference or 40 for max accuracy)
-    beam_size: int = 10
+    # Beam search decoder beam size (40 for high accuracy lattice search on GPU)
+    beam_size: int = 40
     penalty: float = 0.0
     lm_weight: float = 0.0
     device: str = "cpu"

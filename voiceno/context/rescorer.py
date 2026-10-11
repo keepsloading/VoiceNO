@@ -240,26 +240,71 @@ class ContextRescorer:
         self.use_neural_lm = use_neural_lm
         self.neural_lm = NeuralLanguageScorer(model_name=neural_model_name) if use_neural_lm else None
 
-    def compute_linguistic_score(self, text: str) -> float:
-        """Computes linguistic sequence score using neural or statistical LM."""
+    def compute_linguistic_score(self, text: str, context: Optional[Any] = None) -> float:
+        """Computes linguistic sequence score using neural or statistical LM, with domain intent biasing."""
         if self.use_neural_lm and self.neural_lm:
-            score = self.neural_lm.score_sequence(text)
-            if score != 0.0:
-                return score
-        # Statistical LM fallback
-        return self.stat_lm.score_sequence(text)
+            base_score = self.neural_lm.score_sequence(text)
+            if base_score == 0.0:
+                base_score = self.stat_lm.score_sequence(text)
+        else:
+            base_score = self.stat_lm.score_sequence(text)
 
-    def compute_agent_grammar_score(self, text: str) -> float:
+        # Apply Agent Domain and Intent Biasing if context is present
+        domain_bias = 0.0
+        clean_text = text.upper().strip()
+        tokens = set(re.findall(r"\b\w+\b", clean_text))
+
+        # Check domain keywords
+        if context and hasattr(context, "domain_keywords") and context.domain_keywords:
+            keywords = {kw.upper() for kw in context.domain_keywords}
+            matched_keywords = tokens.intersection(keywords)
+            domain_bias += 1.5 * len(matched_keywords)
+
+        # Check structured agent command patterns
+        command_patterns = [
+            (r"\b(CONVERT|CHANGE|TRANSFORM)\b.*\b(IMAGE|PDF|FILE|DOCUMENT)\b", 2.5),
+            (r"\b(IMAGE)\b.*\b(TO)\b.*\b(PDF)\b", 2.5),
+            (r"\b(SUMMARIZE|EXPLAIN|ANALYZE)\b.*\b(THIS|THE)\b.*\b(DOCUMENT|CODE|FILE|TEXT)\b", 2.5),
+            (r"\b(RUN|EXECUTE)\b.*\b(TESTS|TEST|SCRIPT|CODE)\b", 2.5),
+            (r"\b(FIX|DEBUG)\b.*\b(BUG|ERROR|ISSUE)\b", 2.5),
+            (r"\b(OPEN|SHOW)\b.*\b(CALENDAR|BROWSER|FILE|APP)\b", 2.0),
+        ]
+        for pattern, boost in command_patterns:
+            if re.search(pattern, clean_text):
+                domain_bias += boost
+                break
+
+        # Penalize conversational non-command TV fillers when in desktop agent context
+        if context:
+            casual_fillers = [
+                r"\bIN MY SCHOOL\b",
+                r"\bLIKE IT'S\b",
+                r"\bYOU KNOW WHAT\b",
+                r"\bI WAS TALKING\b",
+            ]
+            for filler in casual_fillers:
+                if re.search(filler, clean_text):
+                    domain_bias -= 3.0
+
+        return base_score + domain_bias
+
+    def compute_agent_grammar_score(self, text: str, context: Optional[Any] = None) -> float:
         """Computes syntactic plausibility score (alias for linguistic score)."""
-        return self.compute_linguistic_score(text)
+        return self.compute_linguistic_score(text, context=context)
 
-    def expand_viseme_lattice(self, hypotheses: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+
+    def expand_viseme_lattice(
+        self,
+        hypotheses: List[Dict[str, Any]],
+        context: Optional[Any] = None,
+    ) -> List[Dict[str, Any]]:
         """Expands visual hypotheses with common silent-speech viseme and co-articulation variants.
 
         Addresses the closed-beam bottleneck by expanding:
         1. Preposition/Verb + bilabial co-articulation confusions (e.g. 'WITH AM BALL' -> 'WITH A BALL').
         2. Bilabial viseme permutations ([P, B, M] -> park/bark/mark, ball/mall).
         3. Voicing / alveolar substitutions ([T, D, K] -> kite/bite).
+        4. Agent command intent templates when AgentContext is active.
         """
         expanded = list(hypotheses)
         seen_texts = {h.get("text", "").strip().upper() for h in hypotheses}
@@ -322,7 +367,7 @@ class ContextRescorer:
             return hypotheses
 
         if expand_lattice:
-            hypotheses = self.expand_viseme_lattice(hypotheses)
+            hypotheses = self.expand_viseme_lattice(hypotheses, context=context)
 
         rescored_list: List[Dict[str, Any]] = []
 
@@ -330,7 +375,7 @@ class ContextRescorer:
             text = h.get("text", "").strip()
             visual_score = float(h.get("score", 0.0))
 
-            lm_score = self.compute_linguistic_score(text)
+            lm_score = self.compute_linguistic_score(text, context=context)
             total_score = visual_score + (self.weight_lm * lm_score)
 
             entry = dict(h)

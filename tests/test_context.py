@@ -68,3 +68,19 @@ def test_viseme_lattice_expansion_coarticulation():
     assert rescored[0]["text"] == "I AM PLAYING WITH A BALL"
     assert rescored[0]["rescored_prob"] > 0.5
 
+
+def test_agent_command_domain_biasing():
+    """Tests that AgentContext biases domain intent commands over conversational fillers."""
+    rescorer = ContextRescorer()
+    context = AgentContext(
+        domain_keywords=["CONVERT", "IMAGE", "PDF", "FILE"]
+    )
+    hypotheses = [
+        {"text": "LIKE IT'S IN MY SCHOOL", "score": -4.2},   # TV training data prior
+        {"text": "CONVERT THIS IMAGE TO PDF", "score": -5.5}, # agent intent
+    ]
+    rescored = rescorer.rescore_hypotheses(hypotheses, context=context)
+    assert rescored[0]["text"] == "CONVERT THIS IMAGE TO PDF"
+    assert rescored[0]["rescored_score"] > rescored[1]["rescored_score"]
+
+
