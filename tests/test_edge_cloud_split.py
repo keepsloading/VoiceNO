@@ -31,35 +31,16 @@ def test_edge_mouth_extractor_serialization():
 
 
 
-def test_all_domains_registration_and_activation():
-    """Tests that all 4 roadmap domains are registered and switchable."""
+def test_ai_prompts_domain_registration():
+    """Tests that the AI Prompts domain is registered and active."""
     domains = DomainRegistry.list_domains()
     assert "ai_prompts" in domains
-    assert "coding" in domains
-    assert "email" in domains
-    assert "blogging" in domains
-
-    # Test activating coding domain
-    set_active_domain("coding")
-    assert get_active_domain().name == "coding"
-    coding_bias = get_active_domain().compute_domain_bias("GIT COMMIT AND PUSH")
-    assert coding_bias > 5.0
-
-    # Test activating email domain
-    set_active_domain("email")
-    assert get_active_domain().name == "email"
-    email_bias = get_active_domain().compute_domain_bias("PLEASE LET ME KNOW ATTACHED IS THE FILE")
-    assert email_bias > 5.0
-
-    # Test activating blogging domain
-    set_active_domain("blogging")
-    assert get_active_domain().name == "blogging"
-    blog_bias = get_active_domain().compute_domain_bias("IN THIS ARTICLE WE EXPLORE")
-    assert blog_bias > 5.0
-
-    # Reset to default ai_prompts
-    set_active_domain("ai_prompts")
     assert get_active_domain().name == "ai_prompts"
+
+    # Test agent prompt bias
+    prompt_bias = get_active_domain().compute_domain_bias("CONVERT THIS IMAGE TO PDF")
+    assert prompt_bias > 5.0
+
 
 
 def test_cloud_inference_engine_structure():

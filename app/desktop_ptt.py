@@ -83,7 +83,7 @@ class DesktopPTTClient:
 def main():
     parser = argparse.ArgumentParser(description="VoiceNO Desktop Push-To-Talk Client")
     parser.add_argument("--endpoint", type=str, default="http://localhost:8000", help="Cloud / Local inference server URL")
-    parser.add_argument("--domain", type=str, default="ai_prompts", choices=["ai_prompts", "coding", "email", "blogging"], help="Active domain")
+    parser.add_argument("--domain", type=str, default="ai_prompts", choices=["ai_prompts"], help="Active domain (VoiceNO AI Prompts)")
     parser.add_argument("--duration", type=float, default=2.5, help="Recording duration in seconds")
     parser.add_argument("--camera", type=int, default=0, help="Webcam device ID")
     args = parser.parse_args()
