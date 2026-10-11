@@ -21,3 +21,9 @@ experiments/*.json
 *.task
 !voiceno/preprocessing/face_landmarker.task
 *.tflite
+
+# Private founder notes & vision documents
+VISION_NOTES.md
+notes/
+*.local.md
+
