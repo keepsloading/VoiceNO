@@ -84,3 +84,21 @@ def test_agent_command_domain_biasing():
     assert rescored[0]["rescored_score"] > rescored[1]["rescored_score"]
 
 
+def test_modular_domain_registry():
+    """Tests DomainRegistry registration, activation, and domain biasing for AI Prompts."""
+    from voiceno.domains import DomainRegistry, get_active_domain
+
+    domain = get_active_domain()
+    assert domain.name == "ai_prompts"
+    assert "CONVERT" in domain.action_verbs
+    assert "THIS IMAGE" in domain.target_objects
+
+    # Test domain bias evaluation
+    cmd_bias = domain.compute_domain_bias("CONVERT THIS IMAGE TO PDF")
+    noise_bias = domain.compute_domain_bias("I WANT TO GO AND FIRST I MAY SEE YOU IN FM")
+    assert cmd_bias > noise_bias
+    assert cmd_bias > 5.0
+    assert noise_bias < 0.0
+
+
+

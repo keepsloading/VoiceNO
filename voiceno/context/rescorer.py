@@ -234,11 +234,14 @@ class ContextRescorer:
         weight_lm: float = 1.8,
         use_neural_lm: bool = False,
         neural_model_name: str = "Qwen/Qwen2.5-0.5B",
+        domain: Optional[Any] = None,
     ):
         self.weight_lm = weight_lm
         self.stat_lm = StatisticalLanguageModel()
         self.use_neural_lm = use_neural_lm
         self.neural_lm = NeuralLanguageScorer(model_name=neural_model_name) if use_neural_lm else None
+        from voiceno.domains import get_active_domain
+        self.domain = domain or get_active_domain()
 
     def compute_linguistic_score(self, text: str, context: Optional[Any] = None) -> float:
         """Computes linguistic sequence score using neural or statistical LM, with domain intent biasing."""
@@ -249,10 +252,15 @@ class ContextRescorer:
         else:
             base_score = self.stat_lm.score_sequence(text)
 
-        # Apply Agent Domain and Intent Biasing if context is present
+        # 1. Apply Active Domain Module Bias (e.g. AI Prompts)
         domain_bias = 0.0
+        if self.domain:
+            domain_bias += self.domain.compute_domain_bias(text)
+
+        # 2. Apply Dynamic Session Context Biasing if present
         clean_text = text.upper().strip()
         tokens = set(re.findall(r"\b\w+\b", clean_text))
+
 
         # Check domain keywords
         if context and hasattr(context, "domain_keywords") and context.domain_keywords:
