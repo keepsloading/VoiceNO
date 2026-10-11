@@ -4,6 +4,7 @@ Converts cropped mouth patches into normalized grayscale tensors (T, 1, 88, 88)
 matching the exact Auto-AVSR training pipeline distribution.
 """
 
+from pathlib import Path
 from typing import List, Optional, Tuple, Union
 import cv2
 import numpy as np
@@ -104,3 +105,23 @@ class VideoPreprocessor:
         normalized_tensor = self.normalizer(mouth_crops)
 
         return normalized_tensor, mouth_crops
+
+    def __call__(self, video_or_frames: Union[str, Path, np.ndarray, List[np.ndarray]]) -> torch.Tensor:
+        """Enables calling instance directly: tensor = preprocessor(video_or_frames)."""
+        if isinstance(video_or_frames, (str, Path)):
+            import cv2
+            cap = cv2.VideoCapture(str(video_or_frames))
+            frames = []
+            while cap.isOpened():
+                ret, frame = cap.read()
+                if not ret:
+                    break
+                frames.append(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+            cap.release()
+            if not frames:
+                raise ValueError(f"Could not read frames from: {video_or_frames}")
+            video_or_frames = frames
+
+        tensor, _ = self.process(video_or_frames)
+        return tensor
+
