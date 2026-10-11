@@ -83,7 +83,24 @@ class StatisticalLanguageModel:
             ("TO", "PDF"): -1.8,
             ("OPEN", "MY"): -2.2,
             ("MY", "CALENDAR"): -2.5,
+            ("I", "AM"): -1.2,
+            ("AM", "PLAYING"): -1.8,
+            ("PLAYING", "WITH"): -1.6,
+            ("WITH", "A"): -0.9,
+            ("A", "BALL"): -2.4,
+            ("WITH", "THE"): -1.1,
+            # Explicit penalties for ungrammatical transitions
+            ("WITH", "AM"): -12.0,
+            ("AM", "BALL"): -12.0,
+            ("A", "ALL"): -12.0,
+            ("IN", "AM"): -12.0,
+            ("ON", "AM"): -12.0,
+            ("FOR", "AM"): -12.0,
+            ("TO", "AM"): -12.0,
+            ("OF", "AM"): -12.0,
+            ("AT", "AM"): -12.0,
         }
+
 
         # Contextual trigrams for long-range agreement
         self.trigram_priors = {
@@ -236,14 +253,76 @@ class ContextRescorer:
         """Computes syntactic plausibility score (alias for linguistic score)."""
         return self.compute_linguistic_score(text)
 
+    def expand_viseme_lattice(self, hypotheses: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Expands visual hypotheses with common silent-speech viseme and co-articulation variants.
+
+        Addresses the closed-beam bottleneck by expanding:
+        1. Preposition/Verb + bilabial co-articulation confusions (e.g. 'WITH AM BALL' -> 'WITH A BALL').
+        2. Bilabial viseme permutations ([P, B, M] -> park/bark/mark, ball/mall).
+        3. Voicing / alveolar substitutions ([T, D, K] -> kite/bite).
+        """
+        expanded = list(hypotheses)
+        seen_texts = {h.get("text", "").strip().upper() for h in hypotheses}
+
+        # Bilabial co-articulation patterns (lips press together before plosives/vowels)
+        article_confusions = [
+            (r"\b(WITH|IN|FOR|TO|OF|AT|ON|HAVE|BUY|IS|LIKE)\s+AM\b", r"\1 A"),
+            (r"\b(WITH|IN|FOR|TO|OF|AT|ON|HAVE|BUY|IS|LIKE)\s+AM\b", r"\1 THE"),
+            (r"\bAM\s+(BALL|CAR|DOG|CAT|BOOK|HOUSE|BIKE|PEN|KITE|MEETING|CALL|FILE|IMAGE|PDF|COFFEE|TEA|WATER)\b", r"A \1"),
+        ]
+
+        # Viseme class word substitutions
+        viseme_swaps = [
+            (r"\bBARK\b", "PARK"),
+            (r"\bPARK\b", "BARK"),
+            (r"\bBALL\b", "MALL"),
+            (r"\bMALL\b", "BALL"),
+            (r"\bBITE\b", "KITE"),
+            (r"\bKITE\b", "BITE"),
+        ]
+
+        for h in hypotheses:
+            orig_text = h.get("text", "").strip().upper()
+            orig_score = float(h.get("score", 0.0))
+
+            # 1. Test article / co-articulation variants
+            for pattern, repl in article_confusions:
+                if re.search(pattern, orig_text):
+                    variant = re.sub(pattern, repl, orig_text).strip()
+                    if variant and variant not in seen_texts:
+                        expanded.append({
+                            "text": variant,
+                            "score": orig_score - 0.5,
+                            "expanded_from": orig_text,
+                        })
+                        seen_texts.add(variant)
+
+            # 2. Test viseme lexical substitutions
+            for pattern, repl in viseme_swaps:
+                if re.search(pattern, orig_text):
+                    variant = re.sub(pattern, repl, orig_text).strip()
+                    if variant and variant not in seen_texts:
+                        expanded.append({
+                            "text": variant,
+                            "score": orig_score - 0.6,
+                            "expanded_from": orig_text,
+                        })
+                        seen_texts.add(variant)
+
+        return expanded
+
     def rescore_hypotheses(
         self,
         hypotheses: List[Dict[str, Any]],
         context: Optional[Any] = None,
+        expand_lattice: bool = True,
     ) -> List[Dict[str, Any]]:
         """Reranks hypotheses by combining visual score and language model probability."""
         if not hypotheses:
             return hypotheses
+
+        if expand_lattice:
+            hypotheses = self.expand_viseme_lattice(hypotheses)
 
         rescored_list: List[Dict[str, Any]] = []
 

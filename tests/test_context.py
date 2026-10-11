@@ -55,3 +55,16 @@ def test_viseme_disambiguation_kite_bite():
     ]
     rescored = rescorer.rescore_hypotheses(hypotheses)
     assert rescored[0]["text"] == "I WANT TO BUY A KITE"
+
+
+def test_viseme_lattice_expansion_coarticulation():
+    """Tests resolving bilabial co-articulation ('with am ball') into natural English ('with a ball')."""
+    rescorer = ContextRescorer()
+    hypotheses = [
+        {"text": "I AM PLAYING WITH AM BALL", "score": -3.50},
+        {"text": "I AM PLAYING WITH AM ALL", "score": -5.93},
+    ]
+    rescored = rescorer.rescore_hypotheses(hypotheses)
+    assert rescored[0]["text"] == "I AM PLAYING WITH A BALL"
+    assert rescored[0]["rescored_prob"] > 0.5
+
