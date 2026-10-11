@@ -117,8 +117,67 @@ def record_webcam(output_file: str = "webcam_test.mp4") -> str:
     return output_file
 
 
-def run_pipeline(model: Any, rescorer: Any, output_file: str = "webcam_test.mp4", nbest: int = 5) -> Dict[str, Any]:
-    """Records a clip from the browser webcam, runs Conformer beam search, and rescores hypotheses."""
+def get_model_and_rescorer():
+    """Initializes and returns AutoAVSRModel and ContextRescorer, downloading checkpoint if needed."""
+    import cv2
+    import numpy as np
+    import torch
+    import torchvision.io
+
+    def _read_video_cv2(filename, *args, **kwargs):
+        cap = cv2.VideoCapture(filename)
+        frames = []
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
+            frames.append(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+        cap.release()
+        if not frames:
+            raise ValueError(f"Could not read frames from: {filename}")
+        return torch.from_numpy(np.array(frames, dtype=np.uint8)), None, None
+
+    torchvision.io.read_video = _read_video_cv2
+
+    ckpt_path = Path("checkpoints/vsr_trlrs2lrs3vox2avsp_base.pth")
+    if not ckpt_path.is_file():
+        ckpt_path.parent.mkdir(parents=True, exist_ok=True)
+        print("Auto-AVSR base weights not found. Downloading (~1.0 GB)...")
+        try:
+            import gdown
+            gdown.download(id="1r1kx7l9sWnDOCnaFHIGvOtzuhFyFA88_", output=str(ckpt_path), quiet=False)
+        except Exception:
+            subprocess.run(["gdown", "1r1kx7l9sWnDOCnaFHIGvOtzuhFyFA88_", "-O", str(ckpt_path)], check=True)
+
+    from voiceno.config import ModelConfig
+    from voiceno.models.auto_avsr import AutoAVSRModel
+    from voiceno.context.rescorer import ContextRescorer
+
+    device = "cuda:0" if torch.cuda.is_available() else "cpu"
+    print(f"Loading VoiceNO pipeline on {device}...")
+    config = ModelConfig(device=device, beam_size=10)
+    model = AutoAVSRModel(config=config)
+    model.load_checkpoint(str(ckpt_path))
+    rescorer = ContextRescorer()
+    print("VoiceNO Model and Rescorer ready!")
+    return model, rescorer
+
+
+def run_pipeline(
+    model: Any = None,
+    rescorer: Any = None,
+    output_file: str = "webcam_test.mp4",
+    nbest: int = 5,
+) -> Dict[str, Any]:
+    """Records a clip from the browser webcam, runs Conformer beam search, and rescores hypotheses.
+
+    If model or rescorer is not provided, automatically loads/initializes them.
+    """
+    if model is None or rescorer is None:
+        loaded_model, loaded_rescorer = get_model_and_rescorer()
+        model = model or loaded_model
+        rescorer = rescorer or loaded_rescorer
+
     video_clip = record_webcam(output_file)
 
     print("Extracting mouth movements & running Conformer beam search...")
@@ -150,3 +209,4 @@ def run_pipeline(model: Any, rescorer: Any, output_file: str = "webcam_test.mp4"
         "beam": rescored,
         "video_path": video_clip,
     }
+
