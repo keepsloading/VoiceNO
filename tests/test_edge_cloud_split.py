@@ -1,12 +1,12 @@
-"""Unit tests for VoiceNO Edge-Cloud Split processing and Confidential Cloud API."""
+"""Unit tests for Memact Edge-Cloud Split processing and Confidential Cloud API."""
 
 import numpy as np
 import torch
 import pytest
 
-from voiceno.client.mouth_extractor import EdgeMouthExtractor
-from voiceno.domains import DomainRegistry, get_active_domain, set_active_domain
-from voiceno.server.api import CloudInferenceEngine
+from memact.client.mouth_extractor import EdgeMouthExtractor
+from memact.domains import DomainRegistry, get_active_domain, set_active_domain
+from memact.server.api import CloudInferenceEngine
 
 
 def test_edge_mouth_extractor_serialization():

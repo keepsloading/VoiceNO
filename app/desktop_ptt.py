@@ -1,4 +1,4 @@
-"""Desktop Push-to-Talk (PTT) Companion Client for VoiceNO.
+"""Desktop Push-to-Talk (PTT) Companion Client for Memact.
 
 Runs locally in the user's background / menubar.
 Workflow:
@@ -14,12 +14,12 @@ import argparse
 import json
 import time
 import urllib.request
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 import cv2
 import numpy as np
 
-from voiceno.client.mouth_extractor import EdgeMouthExtractor
-from voiceno.domains import get_active_domain
+from memact.client.mouth_extractor import EdgeMouthExtractor
+from memact.domains import get_active_domain
 
 
 class DesktopPTTClient:
@@ -81,9 +81,9 @@ class DesktopPTTClient:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="VoiceNO Desktop Push-To-Talk Client")
+    parser = argparse.ArgumentParser(description="Memact Desktop Push-To-Talk Client")
     parser.add_argument("--endpoint", type=str, default="http://localhost:8000", help="Cloud / Local inference server URL")
-    parser.add_argument("--domain", type=str, default="ai_prompts", choices=["ai_prompts"], help="Active domain (VoiceNO AI Prompts)")
+    parser.add_argument("--domain", type=str, default="ai_prompts", choices=["ai_prompts"], help="Active domain (Memact AI Prompts)")
     parser.add_argument("--duration", type=float, default=2.5, help="Recording duration in seconds")
     parser.add_argument("--camera", type=int, default=0, help="Webcam device ID")
     args = parser.parse_args()

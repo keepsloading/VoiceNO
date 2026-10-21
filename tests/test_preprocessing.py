@@ -1,12 +1,12 @@
-"""Tests for VoiceNo preprocessing pipeline."""
+"""Tests for Memact preprocessing pipeline."""
 
 import numpy as np
 import pytest
 import torch
 
-from voiceno.preprocessing.face import FaceDetector
-from voiceno.preprocessing.mouth_roi import MouthROIExtractor
-from voiceno.preprocessing.normalize import VideoNormalizer, VideoPreprocessor
+from memact.preprocessing.face import FaceDetector
+from memact.preprocessing.mouth_roi import MouthROIExtractor
+from memact.preprocessing.normalize import VideoNormalizer, VideoPreprocessor
 
 
 def test_face_detector_interpolation():

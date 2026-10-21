@@ -1,4 +1,4 @@
-"""Webcam capture module for VoiceNo! V0.
+"""Webcam capture module for Memact V0.
 
 Captures camera video frames without microphone audio.
 PRIVACY-FIRST: Absolutely zero microphone or audio device recording.

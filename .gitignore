@@ -19,7 +19,7 @@ experiments/*.json
 
 # MediaPipe models
 *.task
-!voiceno/preprocessing/face_landmarker.task
+!memact/preprocessing/face_landmarker.task
 *.tflite
 
 # Private founder notes & vision documents

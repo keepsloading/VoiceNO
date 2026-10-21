@@ -1,4 +1,4 @@
-"""Standalone cloud/Colab training script for VoiceNO!
+"""Standalone cloud/Colab training script for Memact
 
 Allows training full Conformer LoRA on a free Google Colab / GPU machine
 and exporting the lightweight lora.pt back to your local laptop.
@@ -22,16 +22,16 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from voiceno.config import VoiceNoConfig
-from voiceno.models.auto_avsr import AutoAVSRModel
-from voiceno.models.personalization import PersonalizationManager
-from voiceno.calibration.trainer import PersonalizationTrainer
-from voiceno.calibration.recorder import CalibrationRecorder
-from voiceno.evaluation.evaluate import Evaluator
+from memact.config import MemactConfig
+from memact.models.auto_avsr import AutoAVSRModel
+from memact.models.personalization import PersonalizationManager
+from memact.calibration.trainer import PersonalizationTrainer
+from memact.calibration.recorder import CalibrationRecorder
+from memact.evaluation.evaluate import Evaluator
 
 
 def main():
-    parser = argparse.ArgumentParser(description="VoiceNO! Cloud/Colab LoRA Fine-tuning")
+    parser = argparse.ArgumentParser(description="Memact Cloud/Colab LoRA Fine-tuning")
     parser.add_argument("--zip", type=str, required=True, help="Path to exported calibration_package.zip")
     parser.add_argument("--user", type=str, default="default", help="User profile ID")
     parser.add_argument("--epochs", type=int, default=15, help="Number of training epochs")
@@ -41,7 +41,7 @@ def main():
     args = parser.parse_args()
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    print(f"=== VoiceNO! Personalization Trainer ===")
+    print(f"=== Memact Personalization Trainer ===")
     print(f"Hardware: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'CPU'}")
     print(f"Device: {device}")
     print(f"User: {args.user}")
@@ -73,7 +73,7 @@ def main():
         raise ValueError("No calibration items found in the provided zip package!")
 
     # 2. Load model
-    config = VoiceNoConfig()
+    config = MemactConfig()
     config.model.device = device
     model_wrapper = AutoAVSRModel(config.model)
     print("Loading Auto-AVSR base checkpoint...")

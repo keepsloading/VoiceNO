@@ -4,7 +4,8 @@ import pytest
 import torch
 import torch.nn as nn
 
-from voiceno.models.personalization import LoRALinear, PersonalizationManager, VisualPromptAdapter
+from memact.models.personalization import LoRALinear, PersonalizationManager, VisualPromptAdapter
+from memact.config import LoRAConfig
 
 
 class DummyAttentionBlock(nn.Module):
@@ -85,6 +86,32 @@ def test_save_and_load_profile(tmp_path):
 
     for layer in new_manager.lora_layers.values():
         torch.testing.assert_close(layer.lora_B, torch.full_like(layer.lora_B, 0.5))
+
+
+def test_profile_restores_saved_rank_and_scaling(tmp_path):
+    manager = PersonalizationManager(LoRAConfig(r=4, lora_alpha=12))
+    manager.apply_lora(DummyAttentionBlock(8))
+    manager.save_profile("speaker", tmp_path)
+    loaded = PersonalizationManager()
+    loaded.load_profile(DummyAttentionBlock(8), "speaker", tmp_path)
+    assert loaded.active_user_id == "speaker"
+    assert all(layer.r == 4 and layer.scaling == 3 for layer in loaded.lora_layers.values())
+
+
+def test_incomplete_profile_is_rejected_and_adapters_removed(tmp_path):
+    manager = PersonalizationManager()
+    manager.apply_lora(DummyAttentionBlock(8))
+    path = manager.save_profile("speaker", tmp_path)
+    weights = torch.load(path, weights_only=True)
+    del weights[next(iter(weights))]
+    torch.save(weights, path)
+    fresh_model = DummyAttentionBlock(8)
+    fresh = PersonalizationManager()
+    with pytest.raises(ValueError, match="do not match"):
+        fresh.load_profile(fresh_model, "speaker", tmp_path)
+    assert not fresh.is_personalized
+    assert fresh.active_user_id is None
+    assert not any(isinstance(layer, LoRALinear) for layer in fresh_model.modules())
 
 
 if __name__ == "__main__":

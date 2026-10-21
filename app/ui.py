@@ -1,4 +1,4 @@
-"""Minimal web UI for VoiceNo! V0.
+"""Minimal web UI for Memact V0.
 
 Provides offline utterance transcription, calibration flow,
 generic vs personalized comparison, and latency telemetry.
@@ -10,25 +10,27 @@ from pathlib import Path
 from typing import Dict, Optional, Tuple
 import gradio as gr
 
-from voiceno.calibration.prompts import CALIBRATION_PROMPTS, EVALUATION_PROMPTS
-from voiceno.calibration.recorder import CalibrationRecorder
-from voiceno.calibration.trainer import PersonalizationTrainer
-from voiceno.clarification.manager import ClarificationManager
-from voiceno.config import REPO_ROOT, VoiceNoConfig
-from voiceno.context.rescorer import ContextRescorer, TaskContext
-from voiceno.evaluation.evaluate import Evaluator
-from voiceno.models.auto_avsr import AutoAVSRModel
-from voiceno.models.personalization import PersonalizationManager
+from memact.branding import DESCRIPTION, NAME, TAGLINE
+
+from memact.calibration.prompts import CALIBRATION_PROMPTS, EVALUATION_PROMPTS
+from memact.calibration.recorder import CalibrationRecorder
+from memact.calibration.trainer import PersonalizationTrainer
+from memact.clarification.manager import ClarificationManager
+from memact.config import REPO_ROOT, MemactConfig
+from memact.context.rescorer import ContextRescorer, TaskContext
+from memact.evaluation.evaluate import Evaluator
+from memact.models.auto_avsr import AutoAVSRModel
+from memact.models.personalization import PersonalizationManager
 
 
 
 def build_ui(
     model_wrapper: Optional[AutoAVSRModel] = None,
     personalization_mgr: Optional[PersonalizationManager] = None,
-    config: Optional[VoiceNoConfig] = None,
+    config: Optional[MemactConfig] = None,
 ) -> gr.Blocks:
-    """Constructs the Gradio interface for VoiceNo!."""
-    config = config or VoiceNoConfig()
+    """Constructs the Gradio interface for Memact."""
+    config = config or MemactConfig()
 
     if model_wrapper is None:
         model_wrapper = AutoAVSRModel(config.model)
@@ -49,11 +51,12 @@ def build_ui(
     .privacy-notice { text-align: center; font-size: 0.85rem; color: #10b981; margin-top: 10px; }
     """
 
-    with gr.Blocks(title="VoiceNO! V0") as demo:
+    with gr.Blocks(title=f"{NAME} — {TAGLINE}") as demo:
         gr.HTML(
-            """
-            <div class="brand-title">VoiceNO!</div>
-            <div class="brand-tagline">You have the right to remain silent.</div>
+            f"""
+            <div class="brand-title">{NAME}</div>
+            <div class="brand-tagline">{TAGLINE}</div>
+            <p style="text-align: center;">{DESCRIPTION}</p>
             """
         )
 
@@ -178,7 +181,7 @@ def build_ui(
                     """
                     ### 🎯 Personalization Calibration Flow
                     Silently articulate the prompted sentences displayed below.
-                    VoiceNO will adapt its LoRA attention weights specifically for your articulatory patterns.
+                    Memact will adapt its LoRA attention weights specifically for your articulatory patterns.
                     """
                 )
                 with gr.Row():
