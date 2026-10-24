@@ -1,4 +1,4 @@
-# Memact: zero-budget MVP plan
+# VoiceNO: zero-budget MVP plan
 
 Updated: 21 October 2026. Status: proposed engineering and validation plan; performance targets below are not measured results.
 
@@ -41,7 +41,7 @@ Specific evidence problems to fix:
 
 Prior inspection ran 21 unit tests successfully. No GPU quality or full training result has been established in this session.
 
-The founder notes cite LISA's 28.8% → 12.2% result as camera lip-reading evidence. The cited paper actually reports that result on silent EMG, using muscle sensors. Its language-assisted decoding is an inspiration, not a Memact performance prediction. Vocalized-video benchmarks also do not establish accuracy on silent mouthing. See sources below.
+The founder notes cite LISA's 28.8% → 12.2% result as camera lip-reading evidence. The cited paper actually reports that result on silent EMG, using muscle sensors. Its language-assisted decoding is an inspiration, not a VoiceNO performance prediction. Vocalized-video benchmarks also do not establish accuracy on silent mouthing. See sources below.
 
 ## 3. Architecture within $0
 
@@ -153,7 +153,7 @@ Before distributing or commercially deploying weights, trace the exact 3,291-hou
 ## Sources checked on 21 October 2026
 
 - [MONA LISA paper](https://arxiv.org/html/2403.05583v1): the cited 12.2% WER result concerns silent EMG, not webcam lip-reading.
-- [Visual-only recognition of normal, whispered and silent speech](https://arxiv.org/abs/1802.06399): evidence of differences between vocalized and silent speech conditions; not a Memact accuracy estimate.
+- [Visual-only recognition of normal, whispered and silent speech](https://arxiv.org/abs/1802.06399): evidence of differences between vocalized and silent speech conditions; not a VoiceNO accuracy estimate.
 - [Auto-AVSR upstream](https://github.com/mpc001/auto_avsr): architecture/baseline reference and distinction between code and pretrained-model terms.
 - [Colab FAQ](https://research.google.com/colaboratory/faq.html): free interactive notebook compute, variable resource availability, and restrictions on unrelated hosting and bypassing notebook use.
 - [ZeroGPU documentation](https://huggingface.co/docs/hub/spaces-zerogpu): conditional free hosting eligibility, supported execution model, quotas, and queues.

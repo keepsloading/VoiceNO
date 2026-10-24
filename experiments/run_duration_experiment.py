@@ -1,4 +1,4 @@
-"""Calibration-duration experiment runner for Memact V0.
+"""Calibration-duration experiment runner for VoiceNO V0.
 
 Evaluates how visual speech recognition performance scales with calibration duration:
 [0m, 1m, 5m, 15m, 30m, 45m].
@@ -17,12 +17,12 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from memact.calibration.recorder import CalibrationRecorder
-from memact.calibration.trainer import PersonalizationTrainer
-from memact.config import REPO_ROOT, MemactConfig
-from memact.evaluation.evaluate import Evaluator
-from memact.models.auto_avsr import AutoAVSRModel
-from memact.models.personalization import PersonalizationManager
+from voiceno.calibration.recorder import CalibrationRecorder
+from voiceno.calibration.trainer import PersonalizationTrainer
+from voiceno.config import REPO_ROOT, VoiceNoConfig
+from voiceno.evaluation.evaluate import Evaluator
+from voiceno.models.auto_avsr import AutoAVSRModel
+from voiceno.models.personalization import PersonalizationManager
 
 
 def run_experiment(
@@ -38,7 +38,7 @@ def run_experiment(
     output_dir = output_dir or (REPO_ROOT / "experiments")
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    config = MemactConfig()
+    config = VoiceNoConfig()
     recorder = CalibrationRecorder()
 
     calib_items = recorder.load_dataset(user_id=user_id, partition="calibration")
@@ -50,7 +50,7 @@ def run_experiment(
         return {}
 
     print("=" * 65)
-    print(f"Running Memact Calibration-Duration Scaling Experiment")
+    print(f"Running VoiceNO Calibration-Duration Scaling Experiment")
     print(f"User: {user_id}")
     print(f"Held-out Evaluation Utterances: {len(eval_items)}")
     print(f"Duration Tiers (minutes): {durations_minutes}")
@@ -144,7 +144,7 @@ def run_experiment(
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Memact Calibration-Duration Scaling Experiment")
+    parser = argparse.ArgumentParser(description="VoiceNO Calibration-Duration Scaling Experiment")
     parser.add_argument("--user", type=str, default="default", help="User profile ID")
     parser.add_argument("--epochs", type=int, default=5, help="Training epochs per tier")
     args = parser.parse_args()

@@ -14,18 +14,18 @@ import cv2
 import pytest
 import torch
 
-from memact.calibration.prompts import CALIBRATION_PROMPTS, EVALUATION_PROMPTS
-from memact.calibration.recorder import CalibrationRecorder
-from memact.calibration.trainer import PersonalizationTrainer
-from memact.config import REPO_ROOT, MemactConfig
-from memact.evaluation.evaluate import Evaluator
-from memact.models.auto_avsr import AutoAVSRModel
-from memact.models.personalization import PersonalizationManager
+from voiceno.calibration.prompts import CALIBRATION_PROMPTS, EVALUATION_PROMPTS
+from voiceno.calibration.recorder import CalibrationRecorder
+from voiceno.calibration.trainer import PersonalizationTrainer
+from voiceno.config import REPO_ROOT, VoiceNoConfig
+from voiceno.evaluation.evaluate import Evaluator
+from voiceno.models.auto_avsr import AutoAVSRModel
+from voiceno.models.personalization import PersonalizationManager
 
 
 def test_complete_personalization_lifecycle(tmp_path):
     # 1. Setup config with temporary storage
-    config = MemactConfig()
+    config = VoiceNoConfig()
     test_calib_dir = tmp_path / "calibration_data"
     test_profiles_dir = tmp_path / "user_profiles"
     test_experiments_dir = tmp_path / "experiments"

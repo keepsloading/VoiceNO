@@ -4,8 +4,8 @@ import pytest
 import torch
 import torch.nn as nn
 
-from memact.models.personalization import LoRALinear, PersonalizationManager, VisualPromptAdapter
-from memact.config import LoRAConfig
+from voiceno.models.personalization import LoRALinear, PersonalizationManager, VisualPromptAdapter
+from voiceno.config import LoRAConfig
 
 
 class DummyAttentionBlock(nn.Module):

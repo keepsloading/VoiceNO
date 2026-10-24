@@ -1,10 +1,10 @@
-# Memact
+# VoiceNO
 
-> **Say it silently.**
+> **You have the right to remain silent.**
 
-**Silent input for your AI.** Memact explores turning silently mouthed webcam input into text you can review and use in an AI tool. The name comes from **Me + Machine + Action**. The brand domain is [memact.com](https://memact.com).
+**Silent input for your AI.** VoiceNO explores turning silently mouthed webcam input into text you can review and use in an AI tool.
 
-This is the new local home of the silent-input project. It is distinct from the earlier Memact context/identity project.
+VoiceNO is a camera-only silent-input research prototype. Recognition quality on genuinely silent speech is still under investigation.
 
 ## Start here
 
@@ -12,8 +12,8 @@ The current milestone is a measured silent-speech baseline. Your laptop captures
 
 1. Read [the baseline quickstart](docs/BASELINE_QUICKSTART.md).
 2. Prepare the current source: `python experiments/package_eval_source.py`.
-3. Upload [Memact_Baseline.ipynb](experiments/Memact_Baseline.ipynb) to Colab and select a GPU runtime.
-4. Upload `memact_eval_source.zip`, then supply existing recordings or record new silent prompts in the notebook.
+3. Upload [VoiceNO_Baseline.ipynb](experiments/VoiceNO_Baseline.ipynb) to Colab and select a GPU runtime.
+4. Upload `voiceno_eval_source.zip`, then supply existing recordings or record new silent prompts in the notebook.
 5. Download the JSON report containing actual predictions, failures, settings, and model identities.
 
 Uploading recordings or recording through Colab sends video to that remote runtime. The prototype requests no microphone. Tight mouth cropping is data minimization; it does not establish anonymity, confidential computing, or guaranteed erasure.
@@ -23,14 +23,14 @@ Uploading recordings or recording through Colab sends video to that remote runti
 From this directory, using an environment with `requirements.txt` installed:
 
 ```bash
-python -m memact --help
-python -m memact export-calib --user default
+python -m voiceno --help
+python -m voiceno export-calib --user default
 python experiments/package_eval_source.py
 ```
 
-The earlier `python -m app.main ...` entry point is also supported. Configuration lives in `memact/config.py` as `MemactConfig`; all application imports now use `memact`.
+The earlier `python -m app.main ...` entry point is also supported. Configuration lives in `voiceno/config.py` as `VoiceNoConfig`; all application imports now use `voiceno`.
 
-The experimental Gradio UI starts with `python -m memact ui`. Its local transcription/training features load the full model and may exceed this laptop's capacity. Use the Colab baseline as the primary workflow.
+The experimental Gradio UI starts with `python -m voiceno ui`. Its local transcription/training features load the full model and may exceed this laptop's capacity. Use the Colab baseline as the primary workflow.
 
 To create a separate dependency environment when needed:
 
@@ -54,7 +54,7 @@ Recognition quality and personalization benefits still need remote GPU evaluatio
 ## Project layout
 
 ```text
-memact/        Recognition, preprocessing, personalization, evaluation, branding
+voiceno/        Recognition, preprocessing, personalization, evaluation, branding
 app/           CLI, experimental Gradio UI, capture utilities
 experiments/   Colab notebooks, benchmark runners, source packager
 tests/         Unit tests and a separate heavy integration test
@@ -73,4 +73,4 @@ The excluded integration test loads/trains the full model. Unit tests use tiny s
 
 Project integration code retains [Apache 2.0](LICENSE) licensing and upstream notices. Auto-AVSR, bundled third-party code, tokenizer/preprocessing assets, and pretrained weights retain their respective provenance and terms. Commercial rights to the exact pretrained checkpoint require separate verification.
 
-The GitHub repository remains `keepsloading/VoiceNO` during the Memact migration. The code, Python package, and product identity use Memact. Website deployment is separate from this repository update.
+The project repository is [keepsloading/VoiceNO](https://github.com/keepsloading/VoiceNO). Product branding, code, and notebooks all use VoiceNO.

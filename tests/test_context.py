@@ -1,7 +1,7 @@
 """Unit tests for AgentContext, ContextRescorer, and probabilistic viseme disambiguation."""
 
 import pytest
-from memact.context.rescorer import AgentContext, ContextRescorer, TaskContext
+from voiceno.context.rescorer import AgentContext, ContextRescorer, TaskContext
 
 
 def test_agent_context_initialization():
@@ -86,7 +86,7 @@ def test_agent_command_domain_biasing():
 
 def test_modular_domain_registry():
     """Tests DomainRegistry registration, activation, and domain biasing for AI Prompts."""
-    from memact.domains import DomainRegistry, get_active_domain
+    from voiceno.domains import DomainRegistry, get_active_domain
 
     domain = get_active_domain()
     assert domain.name == "ai_prompts"

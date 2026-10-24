@@ -12,17 +12,17 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from memact.provenance import code_revision, file_sha256
+from voiceno.provenance import code_revision, file_sha256
 
 
 def package_source(output):
     paths = [ROOT / "requirements.txt", ROOT / "LICENSE"]
-    for directory in ("app", "memact", "experiments"):
+    for directory in ("app", "voiceno", "experiments"):
         for path in (ROOT / directory).rglob("*"):
             if path.is_file() and path.suffix in {".py", ".npy", ".model", ".txt", ".task"}:
                 paths.append(path)
     manifest = {
-        "purpose": "Memact evaluation source; no user recordings, profiles, or VSR checkpoint",
+        "purpose": "VoiceNO evaluation source; no user recordings, profiles, or VSR checkpoint",
         "code": code_revision(ROOT),
         "files": {str(path.relative_to(ROOT)): file_sha256(path) for path in sorted(paths)},
     }
@@ -36,5 +36,5 @@ def package_source(output):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output", type=Path, default=ROOT / "memact_eval_source.zip")
+    parser.add_argument("--output", type=Path, default=ROOT / "voiceno_eval_source.zip")
     print(package_source(parser.parse_args().output))

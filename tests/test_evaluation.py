@@ -8,11 +8,11 @@ import torch
 from torch import nn
 
 from experiments.run_open_vocab_eval import build_evaluation_items, run_open_vocab_evaluation
-from memact.config import LoRAConfig, ModelConfig
-from memact.evaluation.analysis import analyze_predictions
-from memact.evaluation.evaluate import Evaluator
-from memact.models.personalization import LoRALinear, PersonalizationManager
-from memact.models.auto_avsr import AutoAVSRModel
+from voiceno.config import LoRAConfig, ModelConfig
+from voiceno.evaluation.analysis import analyze_predictions
+from voiceno.evaluation.evaluate import Evaluator
+from voiceno.models.personalization import LoRALinear, PersonalizationManager
+from voiceno.models.auto_avsr import AutoAVSRModel
 from types import SimpleNamespace
 
 

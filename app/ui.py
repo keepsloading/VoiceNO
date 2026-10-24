@@ -1,4 +1,4 @@
-"""Minimal web UI for Memact V0.
+"""Minimal web UI for VoiceNO V0.
 
 Provides offline utterance transcription, calibration flow,
 generic vs personalized comparison, and latency telemetry.
@@ -10,27 +10,27 @@ from pathlib import Path
 from typing import Dict, Optional, Tuple
 import gradio as gr
 
-from memact.branding import DESCRIPTION, NAME, TAGLINE
+from voiceno.branding import DESCRIPTION, NAME, TAGLINE
 
-from memact.calibration.prompts import CALIBRATION_PROMPTS, EVALUATION_PROMPTS
-from memact.calibration.recorder import CalibrationRecorder
-from memact.calibration.trainer import PersonalizationTrainer
-from memact.clarification.manager import ClarificationManager
-from memact.config import REPO_ROOT, MemactConfig
-from memact.context.rescorer import ContextRescorer, TaskContext
-from memact.evaluation.evaluate import Evaluator
-from memact.models.auto_avsr import AutoAVSRModel
-from memact.models.personalization import PersonalizationManager
+from voiceno.calibration.prompts import CALIBRATION_PROMPTS, EVALUATION_PROMPTS
+from voiceno.calibration.recorder import CalibrationRecorder
+from voiceno.calibration.trainer import PersonalizationTrainer
+from voiceno.clarification.manager import ClarificationManager
+from voiceno.config import REPO_ROOT, VoiceNoConfig
+from voiceno.context.rescorer import ContextRescorer, TaskContext
+from voiceno.evaluation.evaluate import Evaluator
+from voiceno.models.auto_avsr import AutoAVSRModel
+from voiceno.models.personalization import PersonalizationManager
 
 
 
 def build_ui(
     model_wrapper: Optional[AutoAVSRModel] = None,
     personalization_mgr: Optional[PersonalizationManager] = None,
-    config: Optional[MemactConfig] = None,
+    config: Optional[VoiceNoConfig] = None,
 ) -> gr.Blocks:
-    """Constructs the Gradio interface for Memact."""
-    config = config or MemactConfig()
+    """Constructs the Gradio interface for VoiceNO."""
+    config = config or VoiceNoConfig()
 
     if model_wrapper is None:
         model_wrapper = AutoAVSRModel(config.model)
@@ -181,7 +181,7 @@ def build_ui(
                     """
                     ### 🎯 Personalization Calibration Flow
                     Silently articulate the prompted sentences displayed below.
-                    Memact will adapt its LoRA attention weights specifically for your articulatory patterns.
+                    VoiceNO will adapt its LoRA attention weights specifically for your articulatory patterns.
                     """
                 )
                 with gr.Row():

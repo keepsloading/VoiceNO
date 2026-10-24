@@ -1,22 +1,22 @@
 # Inherited prototype reference
 
-Historical prototype documentation migrated to Memact branding. Performance, privacy, and completion claims below are unverified; use the current README and baseline quickstart for supported workflows.
+Historical prototype documentation migrated to VoiceNO branding. Performance, privacy, and completion claims below are unverified; use the current README and baseline quickstart for supported workflows.
 
-# Memact
+# VoiceNO
 
-> **Say it silently.**
+> **You have the right to remain silent.**
 
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Status: V0 Research Prototype](https://img.shields.io/badge/Status-V0_Offline_Prototype-orange.svg)](#current-status)
 
-**Memact** is a privacy-first, camera-only silent speech interface for AI agents. It enables a user to silently mouth natural language instructions directly to an AI assistant without making a sound or typing.
+**VoiceNO** is a privacy-first, camera-only silent speech interface for AI agents. It enables a user to silently mouth natural language instructions directly to an AI assistant without making a sound or typing.
 
 ---
 
-## 1. What is Memact?
+## 1. What is VoiceNO?
 
-Memact performs silent visual speech recognition (lip-reading) entirely from camera video without a microphone. It addresses the fundamental problem of **viseme ambiguity** (where sounds like `/p/`, `/b/`, `/m/` appear visually identical on the lips) by combining:
+VoiceNO performs silent visual speech recognition (lip-reading) entirely from camera video without a microphone. It addresses the fundamental problem of **viseme ambiguity** (where sounds like `/p/`, `/b/`, `/m/` appear visually identical on the lips) by combining:
 
 1. **Local Visual Speech Recognition:** Pretrained Auto-AVSR visual backbone preserving N-best candidate hypotheses.
 2. **Personal Calibration:** Lightweight LoRA attention adaptation fine-tuned to the user's articulatory dynamics.
@@ -25,11 +25,11 @@ Memact performs silent visual speech recognition (lip-reading) entirely from cam
 
 ---
 
-## 2. Why Memact for AI Agents?
+## 2. Why VoiceNO for AI Agents?
 
 Conventional voice assistants require speaking aloud, making them unusable in open offices, libraries, public transport, or late at night. Conversely, keyboard typing is slow and interrupts physical workflows.
 
-Memact enables **private, zero-acoustic human-AI interaction**:
+VoiceNO enables **private, zero-acoustic human-AI interaction**:
 - **Zero Audio Footprint:** Complete privacy in crowded spaces.
 - **Structured Intent Space:** Commands follow natural agent grammar (*"Convert this image to PDF"*, *"Summarize this document"*, *"Why does this code fail"*).
 - **Environment Grounding:** The AI agent's awareness of the active window and screen context provides the missing prior needed to resolve visual speech ambiguity.
@@ -91,7 +91,7 @@ Dispatched AI Agent Command (e.g., "Convert this image to PDF")
 
 ## 6. Privacy & Safety Design
 
-Memact is designed with a strict **privacy-first** architecture:
+VoiceNO is designed with a strict **privacy-first** architecture:
 - **No Microphone Access:** Audio hardware is never opened, queried, or recorded.
 - **Local Inference:** All frame processing and model inference execute strictly locally on the user's machine. No visual data is transmitted over networks.
 - **Explicit Storage:** Webcam video is never persisted silently. Utterances are only stored when the user explicitly initiates a calibration or evaluation recording.
@@ -111,7 +111,7 @@ Memact is designed with a strict **privacy-first** architecture:
 
 ```bash
 # Clone the repository
-cd memact_new
+cd VoiceNO
 
 # Create and activate virtual environment
 python3 -m venv .venv
@@ -172,7 +172,7 @@ python -m app.main calibrate --user user_001 --strategy conformer_lora --epochs 
 #### 4. Export Calibration Package for Free Google Colab GPU
 ```bash
 python -m app.main export-calib --user user_001
-# Open experiments/Memact_Colab_Calibration.ipynb in Google Colab, upload the zip,
+# Open experiments/VoiceNO_Colab_Calibration.ipynb in Google Colab, upload the zip,
 # train on a free T4 GPU in 20 seconds, and download the lora.pt back to your laptop!
 ```
 
@@ -192,7 +192,7 @@ python experiments/run_duration_experiment.py --user user_001
 
 Standard transformer backpropagation through 12 Conformer layers on video requires 3-4 GB of activation memory, which causes severe memory thrashing and thermal throttling on ultraportable laptop CPUs (e.g. 15W quad-core CPUs with 6-8 GB RAM).
 
-Memact solves this with two complementary training architectures:
+VoiceNO solves this with two complementary training architectures:
 
 1. **⚡ Fast CPU Adapter (Instant Local Calibration):**
    - Extracts Conformer embeddings `(T, 768)` in `torch.no_grad()` (< 0.8s per utterance).
@@ -203,15 +203,15 @@ Memact solves this with two complementary training architectures:
 
 2. **☁️ Free Cloud GPU Offload (Google Colab 1-Click):**
    - Click **"Export Calibration Package (.zip)"** in the UI or run `python -m app.main export-calib`.
-   - Open [`experiments/Memact_Colab_Calibration.ipynb`](experiments/Memact_Colab_Calibration.ipynb) in Google Colab.
+   - Open [`experiments/VoiceNO_Colab_Calibration.ipynb`](experiments/VoiceNO_Colab_Calibration.ipynb) in Google Colab.
    - Fine-tunes all 12 multi-head attention layers ($W_q, W_k, W_v$) on a free Nvidia T4 GPU in ~20 seconds.
    - Automatically downloads the tiny `lora.pt` (1.7 MB) back to your laptop `user_profiles/{user_id}/` folder.
-   - Local Memact inference remains 100% private and offline!
+   - Local VoiceNO inference remains 100% private and offline!
 
 
 Personalization enables user-specific visual adaptation without modifying the foundational weights:
 
-1. **Prompt Display:** Memact presents phonetically rich sentences for silent articulation.
+1. **Prompt Display:** VoiceNO presents phonetically rich sentences for silent articulation.
 2. **Calibration Partition:** Utterances are recorded into `calibration_data/{user_id}/calibration/`.
 3. **Held-Out Evaluation:** A strictly disjoint set of sentences is recorded into `calibration_data/{user_id}/evaluation/`.
 4. **LoRA Fine-Tuning:** The Auto-AVSR base weights remain frozen. Only low-rank matrices $A$ and $B$ attached to attention projections ($W_q, W_k, W_v$) receive gradients.
@@ -247,13 +247,13 @@ Personalization enables user-specific visual adaptation without modifying the fo
 ## 10. Repository Structure
 
 ```text
-memact/
+voiceno/
 ├── app/
 │   ├── main.py                     # CLI entrypoint and subcommand dispatcher
 │   ├── webcam.py                   # Camera-only video capture (audio-free)
 │   └── ui.py                       # Gradio local web interface
 │
-├── memact/
+├── voiceno/
 │   ├── preprocessing/
 │   │   ├── face.py                 # MediaPipe FaceLandmarker tracking & interpolation
 │   │   ├── mouth_roi.py            # Affine alignment & 96x96 mouth ROI extraction
@@ -315,11 +315,11 @@ Test coverage includes:
 ## 12. Licensing & Disclosures
 
 ### Code License
-The Memact software and integration code are licensed under the **Apache License 2.0**. See [`LICENSE`](LICENSE) for details.
+The VoiceNO software and integration code are licensed under the **Apache License 2.0**. See [`LICENSE`](LICENSE) for details.
 
 ### Research Model Checkpoint Licensing Disclosure
 The pretrained Visual Speech Recognition checkpoint `vsr_trlrs2lrs3vox2avsp_base.pth` is derived from the **Auto-AVSR** research project (Imperial College London / Pingchuan Ma et al.).
 
 - **Code:** Apache 2.0 licensed.
 - **Training Data & Weights:** This checkpoint was trained on research datasets including LRS2, LRS3-TED, VoxCeleb2, and AVSpeech. These datasets are subject to individual non-commercial and research-only academic license terms.
-- **Disclaimer:** Memact is an **academic research prototype**. The use of this checkpoint is strictly for research exploration and benchmarking. No commercial rights, endorsements, or clearances are claimed or implied.
+- **Disclaimer:** VoiceNO is an **academic research prototype**. The use of this checkpoint is strictly for research exploration and benchmarking. No commercial rights, endorsements, or clearances are claimed or implied.

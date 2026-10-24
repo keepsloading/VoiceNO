@@ -1,7 +1,7 @@
 """Tests for evaluation metrics."""
 
 import pytest
-from memact.evaluation.metrics import compute_wer, compute_cer, compute_aggregate_metrics, normalize_text
+from voiceno.evaluation.metrics import compute_wer, compute_cer, compute_aggregate_metrics, normalize_text
 
 
 def test_normalize_text():

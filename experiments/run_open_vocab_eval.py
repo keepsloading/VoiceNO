@@ -15,10 +15,10 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from memact.calibration.recorder import CalibrationRecorder
-from memact.config import MemactConfig
-from memact.evaluation.evaluate import Evaluator
-from memact.provenance import file_sha256
+from voiceno.calibration.recorder import CalibrationRecorder
+from voiceno.config import VoiceNoConfig
+from voiceno.evaluation.evaluate import Evaluator
+from voiceno.provenance import file_sha256
 
 
 def build_evaluation_items(
@@ -58,7 +58,7 @@ def run_open_vocab_evaluation(
         raise ValueError("The N-best comparison requires beam_size > 1")
     # Validate recordings/profile before loading the expensive model.
     items = build_evaluation_items(user_id, data_dir=data_dir)
-    config = MemactConfig()
+    config = VoiceNoConfig()
     if profiles_dir is not None:
         config.lora.profiles_dir = Path(profiles_dir)
     if personalized and not (config.lora.profiles_dir / user_id / "lora.pt").is_file():
@@ -70,8 +70,8 @@ def run_open_vocab_evaluation(
             "A GPU is required by default. Run this command in a Colab GPU notebook; "
             "--device cpu explicitly opts into heavy local inference."
         )
-    from memact.models.auto_avsr import AutoAVSRModel
-    from memact.models.personalization import PersonalizationManager
+    from voiceno.models.auto_avsr import AutoAVSRModel
+    from voiceno.models.personalization import PersonalizationManager
 
     config.model.device = device
     config.model.beam_size = beam_size

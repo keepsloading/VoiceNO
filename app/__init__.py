@@ -1,1 +1,1 @@
-"""Memact application entrypoints and user interface."""
+"""VoiceNO application entrypoints and user interface."""

@@ -149,17 +149,17 @@ def get_model_and_rescorer():
         except Exception:
             subprocess.run(["gdown", "1r1kx7l9sWnDOCnaFHIGvOtzuhFyFA88_", "-O", str(ckpt_path)], check=True)
 
-    from memact.config import ModelConfig
-    from memact.models.auto_avsr import AutoAVSRModel
-    from memact.context.rescorer import ContextRescorer
+    from voiceno.config import ModelConfig
+    from voiceno.models.auto_avsr import AutoAVSRModel
+    from voiceno.context.rescorer import ContextRescorer
 
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
-    print(f"Loading Memact pipeline on {device} (beam_size=40)...")
+    print(f"Loading VoiceNO pipeline on {device} (beam_size=40)...")
     config = ModelConfig(device=device, beam_size=40)
     model = AutoAVSRModel(config=config)
     model.load_checkpoint(str(ckpt_path))
     rescorer = ContextRescorer()
-    print("Memact Model and Rescorer ready!")
+    print("VoiceNO Model and Rescorer ready!")
     return model, rescorer
 
 
@@ -180,7 +180,7 @@ def run_pipeline(
         rescorer = rescorer or loaded_rescorer
 
     if context is None:
-        from memact.context.rescorer import AgentContext
+        from voiceno.context.rescorer import AgentContext
         context = AgentContext(
             domain_keywords=[
                 "CONVERT", "IMAGE", "PDF", "SUMMARIZE", "DOCUMENT",

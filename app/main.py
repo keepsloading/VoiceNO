@@ -1,4 +1,4 @@
-"""CLI and entry point for Memact V0.
+"""CLI and entry point for VoiceNO V0.
 
 Provides CLI commands for:
 - Silent speech transcription (Generic vs Personalized)
@@ -18,18 +18,18 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from memact.calibration.recorder import CalibrationRecorder
-from memact.calibration.trainer import PersonalizationTrainer
-from memact.config import MemactConfig
-from memact.evaluation.evaluate import Evaluator
-from memact.models.auto_avsr import AutoAVSRModel
-from memact.models.personalization import PersonalizationManager
-from memact.branding import DESCRIPTION, NAME, TAGLINE
+from voiceno.calibration.recorder import CalibrationRecorder
+from voiceno.calibration.trainer import PersonalizationTrainer
+from voiceno.config import VoiceNoConfig
+from voiceno.evaluation.evaluate import Evaluator
+from voiceno.models.auto_avsr import AutoAVSRModel
+from voiceno.models.personalization import PersonalizationManager
+from voiceno.branding import DESCRIPTION, NAME, TAGLINE
 
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="memact",
+        prog="voiceno",
         description=f"{NAME} — {TAGLINE} {DESCRIPTION}",
     )
     subparsers = parser.add_subparsers(dest="command", help="Available subcommands")
@@ -59,14 +59,14 @@ def main():
     eval_parser.add_argument("--calib-min", type=float, default=5.0, help="Calibration duration represented")
 
     # Command: ui
-    ui_parser = subparsers.add_parser("ui", help="Launch Memact local web interface")
+    ui_parser = subparsers.add_parser("ui", help="Launch VoiceNO local web interface")
     ui_parser.add_argument("--host", type=str, default="127.0.0.1", help="Host address")
     ui_parser.add_argument("--port", type=int, default=7860, help="Port number")
     ui_parser.add_argument("--share", action="store_true", help="Create public Gradio link")
 
     args = parser.parse_args()
 
-    config = MemactConfig()
+    config = VoiceNoConfig()
 
     if args.command == "transcribe":
         print(f"Loading Auto-AVSR model ({args.mode.capitalize()} Mode)...")
@@ -118,7 +118,7 @@ def main():
             print(f"\nSuccessfully exported calibration package for user '{args.user}':")
             print(f"  Archive: {zip_path}")
             print(f"  Size: {zip_path.stat().st_size / 1024:.1f} KB")
-            print("\nYou can upload this zip to Google Colab using 'experiments/Memact_Colab_Calibration.ipynb' to train on a free GPU!")
+            print("\nYou can upload this zip to Google Colab using 'experiments/VoiceNO_Colab_Calibration.ipynb' to train on a free GPU!")
         except Exception as e:
             print(f"Export failed: {e}")
             sys.exit(1)
@@ -145,7 +145,7 @@ def main():
 
     elif args.command == "ui":
         from app.ui import build_ui
-        print(f"Launching Memact Web UI on http://{args.host}:{args.port}...")
+        print(f"Launching VoiceNO Web UI on http://{args.host}:{args.port}...")
         ui = build_ui(config=config)
         ui.launch(server_name=args.host, server_port=args.port, share=args.share)
 
